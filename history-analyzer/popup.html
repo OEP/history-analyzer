@@ -1,0 +1,136 @@
+<style>
+body {
+  min-width:150px;
+  overflow-x:hidden;
+}
+
+#pieGraph {
+  margin:5px;
+  vertical-align:middle;
+  horizontal-align: middle;
+}
+</style>
+
+<script>
+var maxEntries = 10;
+var colors = [ "#7E1E9C", "#15B01A", "#0343DF", "#FF81C0", "#653700", "#E50000", "#95D0FC",
+	"#00035B", "#F97306", "#929591", "#C20078", "#FFFF14", "#75BBFD"];
+var height = 10;
+var margin = 5;
+var keySize = height;
+
+function hashURL(url) {
+	if(typeof url != "undefined") {
+		return url.split(/\/+/g)[1];
+	}
+	else {
+		return;
+	}
+}
+
+function showStats(dict) {
+	dict.data = [];
+	for(var prop in dict.items) {
+		if(dict.items.hasOwnProperty(prop)) {
+			dict.data.push( [prop, dict.items[prop]] );
+		}
+	}
+	dict.data.sort( function(a,b) { return a[1] - b[1] } );
+	drawPie( dict );
+}
+
+function drawPie( dict ) {
+	var canvas = document.getElementById("pieGraph");
+	
+	if( canvas.getContext ) {
+		var ctx = canvas.getContext("2d");
+		ctx.beginPath();
+		ctx.strokeStyle = "#000000";
+		ctx.fillStyle = "rgba(0,0,0,1.0)";
+		ctx.arc(75,75,75,0.0,2 * Math.PI, false);
+		ctx.stroke();
+			
+		var count = 0;
+		ctx.beginPath();
+		ctx.moveTo(75,75);
+		ctx.lineTo(150, 75);
+		ctx.stroke();
+
+		
+		for(var i = 0; i < maxEntries && i < dict.data.length; i++) {
+			var item = dict.data[dict.data.length-i-1];
+			var prevAngle = 2 * Math.PI * count / dict.total;
+			var angle =
+				(i < maxEntries-1)
+				? 2 * Math.PI * (count + item[1]) / dict.total
+				: 2 * Math.PI;
+		
+			ctx.beginPath();
+			ctx.strokeStyle = "#000000";
+			ctx.fillStyle = colors[i];
+			ctx.moveTo(75,75);
+			ctx.arc(75, 75, 75, prevAngle, angle, false);
+			ctx.fill();
+			ctx.stroke();
+
+			
+			var y = 175 + i * margin + i * height;
+			var pct, label;
+			
+			if(i == maxEntries-1 && i < dict.data.length - 1) {
+				label = "other";
+				pct = 100 * (dict.total - count) * 1.0 / dict.total;
+			}
+			else {
+				label = item[0];
+				pct = 100 * (item[1] * 1.0) / dict.total;
+			}
+
+
+			
+			ctx.beginPath();
+			ctx.fillRect(margin, y, keySize, keySize);
+			ctx.fillStyle = "#000000";
+			ctx.fillText("(" + pct.toFixed(2) + "%) " + label, 2*margin + keySize, y + keySize);
+			ctx.fill();
+			
+			count += item[1];
+		}
+	}
+}
+
+function onHistoryResult(results) {
+	var dict = { discards: 0, total: 0, items: {} };
+	for(var i = 0;  i < results.length; ++i) {
+		var hash = hashURL( results[i].url );
+		//console.log("Hash is: " hash);
+		if(typeof hash != "undefined") {
+			var count = results[i].visitCount;
+			dict.total += count;
+			if(typeof dict.items[hash] == "undefined") {
+				dict.items[hash] = count;
+				//console.log("Added hash: " + hash);
+			}
+			else {
+				dict.items[hash] += count;
+				//console.log("Increment hash: " + hash);
+			}
+		}
+		else {
+			dict.discards++;
+		}
+	}
+	
+	showStats( dict );
+}
+
+function fetchHistory() {
+	chrome.history.search({ text: "", maxResults: 2000 }, onHistoryResult);
+}
+
+fetchHistory();
+</script>
+
+<canvas id="pieGraph" height="350" width="200">
+	I'm a canvas!
+</canvas>

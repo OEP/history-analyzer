@@ -1,0 +1,12 @@
+{
+   "browser_action": {
+      "default_icon": "icon.png",
+      "popup": "popup.html"
+   },
+   "description": "Simple first extension. Creates a pie chart based on your history!",
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCl34Bofs1dXywF7n5hw/CddIKuH4pbOUq21Lx4IYyohpnxgGMu2aGZACEGMAycrjcE9NzaIAmru1g7rVi1yG+ZdCJOnL+5aisStSOFXsFhYWARJ1lTDKaDkvLNOtoippnTEd012QYDIN9s5QN63J7ldzSEKbU/udgs4+mCfKAHkQIDAQAB",
+   "name": "History Analyzer",
+   "permissions": [ "history" ],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "1.0"
+}
